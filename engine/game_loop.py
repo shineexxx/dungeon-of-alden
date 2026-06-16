@@ -242,6 +242,7 @@ def run_game(stdscr: "_CursesWindow", state: "GameState") -> None:
             log_lines = state.log[-10:]
             continue
 
+        acted = False
         if action.type == "search":
             msg = _search_traps(state)
             state.log_message(msg)
@@ -261,7 +262,6 @@ def run_game(stdscr: "_CursesWindow", state: "GameState") -> None:
                 return
             continue
 
-        acted = False
         if action.type == "move":
             dx = action.data["dx"]
             dy = action.data["dy"]
