@@ -34,6 +34,8 @@ def get_action(key: int) -> Action:
         return Action("move", {"dx": MOVEMENT_KEYS[key][0], "dy": MOVEMENT_KEYS[key][1]})
     if key == ord("g") or key == ord("G"):
         return Action("pickup")
+    if key == ord("d") or key == ord("D"):
+        return Action("drop")
     if key == ord("s") or key == ord("S"):
         return Action("search")
     if key == ord("i") or key == ord("I"):

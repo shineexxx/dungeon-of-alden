@@ -196,7 +196,7 @@ def run_game(stdscr: "_CursesWindow", state: "GameState") -> None:
             menu_selection = 0
             continue
 
-        if action.type == "inventory":
+        if action.type == "inventory" or action.type == "drop":
             if open_inventory(stdscr, state.player, state):
                 recalculate_stats(state.player)
                 compute_fov(state.dungeon, state.player.x, state.player.y, state.player.fov_radius)

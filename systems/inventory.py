@@ -293,9 +293,37 @@ class InventoryUI:
         return True
 
     def _drop_selected(self) -> None:
-        """Выбросить выбранный предмет."""
-        # TODO: реализовать выброс на пол в будущих итерациях
-        self._message = "Выброс пока не реализован."
+        """Выбросить выбранный предмет на пол под игроком."""
+        item_id = self._selected_item_id()
+        if not item_id:
+            self._message = "Нечего выбрасывать."
+            return
+
+        from content.items import get_item
+        data = get_item(item_id)
+        if not data:
+            self._message = "Неизвестный предмет."
+            return
+
+        # Если предмет надет — сначала снять (если не проклят)
+        if self.mode == "equipment":
+            if self._is_cursed(item_id):
+                self._message = "Проклятый предмет нельзя снять."
+                return
+            if not self._unequip_selected_slot():
+                self._message = "Не удалось снять предмет."
+                return
+
+        # Удаляем один экземпляр из инвентаря
+        self._remove_from_inventory(item_id, 1)
+
+        # Кладём на пол
+        pos = (self.player.x, self.player.y)
+        self.game_state.items_on_floor.setdefault(pos, []).append(item_id)
+
+        self._message = f"Вы выбросили {data['name']}."
+        if data["type"] == "gold":
+            self._message = "Золото нельзя выбросить."
 
     def _use_selected(self) -> bool:
         """Использовать выбранный предмет (зелье/свиток/еда/артефакт)."""
