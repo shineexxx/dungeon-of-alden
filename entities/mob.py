@@ -14,6 +14,7 @@ class Mob:
     id: str
     name: str
     char: str
+    unicode_char: str
     color_pair: int
     x: int
     y: int
@@ -47,6 +48,7 @@ class Mob:
             id=monster_id,
             name=data["name"],
             char=data["char"],
+            unicode_char=data.get("unicode_char", data["char"]),
             color_pair=pair_id,
             x=x,
             y=y,

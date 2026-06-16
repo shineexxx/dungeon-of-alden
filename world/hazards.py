@@ -17,6 +17,7 @@ from __future__ import annotations
 HAZARDS: dict[str, dict] = {
     "lava": {
         "id": "lava",
+        "unicode_char": "🔥",
         "char": "~",
         "color": "red",
         "walkable": False,
@@ -28,6 +29,7 @@ HAZARDS: dict[str, dict] = {
     },
     "water": {
         "id": "water",
+        "unicode_char": "≈",
         "char": "=",
         "color": "blue",
         "walkable": True,
@@ -39,6 +41,7 @@ HAZARDS: dict[str, dict] = {
     },
     "mud": {
         "id": "mud",
+        "unicode_char": "▒",
         "char": ",",
         "color": "brown",
         "walkable": True,
@@ -50,6 +53,7 @@ HAZARDS: dict[str, dict] = {
     },
     "ice": {
         "id": "ice",
+        "unicode_char": "❄",
         "char": "*",
         "color": "cyan",
         "walkable": True,
@@ -61,6 +65,7 @@ HAZARDS: dict[str, dict] = {
     },
     "spikes": {
         "id": "spikes",
+        "unicode_char": "▲",
         "char": "^",
         "color": "white",
         "walkable": True,
@@ -72,6 +77,7 @@ HAZARDS: dict[str, dict] = {
     },
     "poison_gas": {
         "id": "poison_gas",
+        "unicode_char": "☣",
         "char": "%",
         "color": "green",
         "walkable": True,
@@ -83,6 +89,7 @@ HAZARDS: dict[str, dict] = {
     },
     "web": {
         "id": "web",
+        "unicode_char": "🕸",
         "char": "&",
         "color": "white",
         "walkable": True,
@@ -94,6 +101,7 @@ HAZARDS: dict[str, dict] = {
     },
     "glowing_mushroom": {
         "id": "glowing_mushroom",
+        "unicode_char": "🍄",
         "char": ";",
         "color": "magenta",
         "walkable": True,
@@ -105,6 +113,7 @@ HAZARDS: dict[str, dict] = {
     },
     "fire_pit": {
         "id": "fire_pit",
+        "unicode_char": "🔥",
         "char": "0",
         "color": "red",
         "walkable": True,
@@ -116,6 +125,7 @@ HAZARDS: dict[str, dict] = {
     },
     "darkness": {
         "id": "darkness",
+        "unicode_char": "▓",
         "char": " ",
         "color": "black",
         "walkable": True,
@@ -127,6 +137,7 @@ HAZARDS: dict[str, dict] = {
     },
     "void": {
         "id": "void",
+        "unicode_char": "∅",
         "char": "·",
         "color": "black",
         "walkable": True,

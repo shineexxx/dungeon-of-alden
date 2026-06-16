@@ -13,18 +13,18 @@ if TYPE_CHECKING:
 
 # Реестр интерактивных объектов (тайлы на карте)
 INTERACTABLES: dict[str, dict] = {
-    "altar": {"char": "_", "color": "red", "name": "алтарь"},
-    "fountain": {"char": "F", "color": "blue", "name": "фонтан"},
-    "chest": {"char": "C", "color": "yellow", "name": "сундук"},
-    "tablet": {"char": "?", "color": "white", "name": "табличка"},
-    "lever": {"char": "L", "color": "brown", "name": "рычаги"},
-    "circle": {"char": "O", "color": "magenta", "name": "жертвенный круг"},
-    "lore": {"char": '"', "color": "cyan", "name": "надпись"},
-    "cache": {"char": "$", "color": "yellow", "name": "тайник"},
-    "trap_door": {"char": "T", "color": "red", "name": "засада"},
-    "spirit": {"char": "G", "color": "white", "name": "дух"},
-    "npc": {"char": "@", "color": "yellow", "name": "NPC"},
-    "rubble": {"char": "R", "color": "brown", "name": "завалы"},
+    "altar": {"char": "_", "unicode_char": "⛩", "color": "red", "name": "алтарь"},
+    "fountain": {"char": "F", "unicode_char": "⛲", "color": "blue", "name": "фонтан"},
+    "chest": {"char": "C", "unicode_char": "■", "color": "yellow", "name": "сундук"},
+    "tablet": {"char": "?", "unicode_char": "📜", "color": "white", "name": "табличка"},
+    "lever": {"char": "L", "unicode_char": "⚙", "color": "brown", "name": "рычаги"},
+    "circle": {"char": "O", "unicode_char": "⭕", "color": "magenta", "name": "жертвенный круг"},
+    "lore": {"char": '"', "unicode_char": "📖", "color": "cyan", "name": "надпись"},
+    "cache": {"char": "$", "unicode_char": "💰", "color": "yellow", "name": "тайник"},
+    "trap_door": {"char": "T", "unicode_char": "⚠", "color": "red", "name": "засада"},
+    "spirit": {"char": "G", "unicode_char": "👻", "color": "white", "name": "дух"},
+    "npc": {"char": "@", "unicode_char": "🧙", "color": "yellow", "name": "NPC"},
+    "rubble": {"char": "R", "unicode_char": "🪨", "color": "brown", "name": "завалы"},
 }
 
 

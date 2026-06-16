@@ -18,6 +18,7 @@ class NPC:
     id: str
     name: str
     char: str
+    unicode_char: str
     color: str
     x: int
     y: int
@@ -56,6 +57,7 @@ NPC_TEMPLATES: dict[str, dict] = {
     "merchant": {
         "name": "Странствующий торговец",
         "char": "@",
+        "unicode_char": "🧑‍💼",
         "color": "yellow",
         "greeting": "А-а, путник! Заходи, не стесняйся.",
         "farewell": "Удачи в глубинах.",
@@ -72,6 +74,7 @@ NPC_TEMPLATES: dict[str, dict] = {
     "smith": {
         "name": "Кузнец",
         "char": "@",
+        "unicode_char": "⚒",
         "color": "brown",
         "greeting": "Качественная сталь и надёжные заклёпки.",
         "farewell": "Пусть твой клинок остаётся острым.",
@@ -86,6 +89,7 @@ NPC_TEMPLATES: dict[str, dict] = {
     "alchemist": {
         "name": "Алхимик",
         "char": "@",
+        "unicode_char": "⚗",
         "color": "green",
         "greeting": "Зелья, эликсиры, приворотные отвары...",
         "farewell": "Не перепутай флаконы.",
@@ -100,6 +104,7 @@ NPC_TEMPLATES: dict[str, dict] = {
     "spellvendor": {
         "name": "Заклинатель",
         "char": "@",
+        "unicode_char": "🔮",
         "color": "magenta",
         "greeting": "Знание — самая мощная валюта.",
         "farewell": "Пусть магия течёт сквозь тебя.",
@@ -114,6 +119,7 @@ NPC_TEMPLATES: dict[str, dict] = {
     "prisoner": {
         "name": "Пленник",
         "char": "@",
+        "unicode_char": "⛓",
         "color": "white",
         "greeting": "Прошу, помоги мне...",
         "farewell": "Спасибо. Я не забуду этого.",
@@ -140,6 +146,7 @@ def create_npc(npc_id: str, x: int, y: int, rng: random.Random | None = None) ->
         id=npc_id,
         name=template["name"],
         char=template["char"],
+        unicode_char=template.get("unicode_char", template["char"]),
         color=template["color"],
         x=x,
         y=y,

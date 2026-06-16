@@ -19,6 +19,7 @@ from __future__ import annotations
 TRAPS: dict[str, dict] = {
     "spike_trap": {
         "id": "spike_trap",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "white",
@@ -32,6 +33,7 @@ TRAPS: dict[str, dict] = {
     },
     "poison_needle": {
         "id": "poison_needle",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "green",
@@ -45,6 +47,7 @@ TRAPS: dict[str, dict] = {
     },
     "fire_plate": {
         "id": "fire_plate",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "red",
@@ -58,6 +61,7 @@ TRAPS: dict[str, dict] = {
     },
     "ice_spike": {
         "id": "ice_spike",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "cyan",
@@ -71,6 +75,7 @@ TRAPS: dict[str, dict] = {
     },
     "teleport_trap": {
         "id": "teleport_trap",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "magenta",
@@ -84,6 +89,7 @@ TRAPS: dict[str, dict] = {
     },
     "alarm_trap": {
         "id": "alarm_trap",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "yellow",
@@ -97,6 +103,7 @@ TRAPS: dict[str, dict] = {
     },
     "sleep_gas": {
         "id": "sleep_gas",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "blue",
@@ -110,6 +117,7 @@ TRAPS: dict[str, dict] = {
     },
     "curse_rune": {
         "id": "curse_rune",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "black",
@@ -123,6 +131,7 @@ TRAPS: dict[str, dict] = {
     },
     "falling_rock": {
         "id": "falling_rock",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "brown",
@@ -136,6 +145,7 @@ TRAPS: dict[str, dict] = {
     },
     "magic_rune": {
         "id": "magic_rune",
+        "unicode_char": "⚠",
         "char_hidden": ".",
         "char_revealed": "^",
         "color_revealed": "magenta",
