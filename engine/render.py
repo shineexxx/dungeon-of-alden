@@ -57,13 +57,12 @@ COLOR_PAIRS: dict[int, tuple[int | str, int | str]] = {
     23: ("cyan", "black"),      # оружие
 }
 
-# Unicode-символы для базовых тайлов.
-TILE_UNICODE: dict[str, str] = {
-    "wall": "▓",
-    "floor": "·",
-    "stairs": "▼",
-    "player": "☻",
-    "gold": "$",
+# Символы для двух режимов отрисовки.
+TILE_CHARS: dict[str, dict[str, str]] = {
+    "wall": {"unicode": "▓", "classic": "#"},
+    "floor": {"unicode": "·", "classic": "."},
+    "stairs": {"unicode": "▼", "classic": ">"},
+    "player": {"unicode": "☻", "classic": "@"},
 }
 
 # Цвета предметов по типу.
@@ -103,6 +102,24 @@ def color_attr(color_name: str | int) -> int:
     return curses.color_pair(COLOR_MAP.get(color_name, curses.COLOR_WHITE))
 
 
+def _use_unicode(state: "GameState") -> bool:
+    """Определить, использовать ли Unicode-графику."""
+    return getattr(getattr(state, "settings", None), "use_unicode", True)
+
+
+def _tile_char(key: str, use_unicode: bool) -> str:
+    """Вернуть символ тайла в зависимости от режима."""
+    mapping = TILE_CHARS.get(key, {"unicode": "?", "classic": "?"})
+    return mapping["unicode"] if use_unicode else mapping["classic"]
+
+
+def _data_char(data: dict, use_unicode: bool) -> str:
+    """Вернуть unicode_char или char в зависимости от режима."""
+    if use_unicode:
+        return data.get("unicode_char", data["char"])
+    return data["char"]
+
+
 def _draw_char(stdscr, y: int, x: int, char: str, attr: int) -> None:
     """Безопасно нарисовать символ (UTF-8 через addstr)."""
     try:
@@ -130,6 +147,7 @@ def render_map(
     """Отрисовать всё игровое состояние."""
     stdscr.clear()
     height, width = stdscr.getmaxyx()
+    use_unicode = _use_unicode(state)
 
     if height < 14 or width < 60:
         msg = "Terminal too small (need 60x14)"
@@ -147,20 +165,33 @@ def render_map(
     from content.biomes import get_biome
     biome = get_biome(state.dungeon.biome_id)
     biome_name = biome["name"] if biome else state.dungeon.biome_id
-    hud = (
-        f" ☻{player.hp}/{player.max_hp} ♦{player.mana}/{player.max_mana} "
-        f"⚔{player.atk} 🛡{player.ac} ⭐{player.level} "
-        f"XP:{player.xp}/{xp_next} Гл:{state.depth} {biome_name} $:{player.gold} 🍖:{satiety}{status_icons}"
-    )
+    if use_unicode:
+        hud = (
+            f" ☻{player.hp}/{player.max_hp} ♦{player.mana}/{player.max_mana} "
+            f"⚔{player.atk} 🛡{player.ac} ⭐{player.level} "
+            f"XP:{player.xp}/{xp_next} Гл:{state.depth} {biome_name} $:{player.gold} 🍖:{satiety}{status_icons}"
+        )
+    else:
+        hud = (
+            f" HP:{player.hp}/{player.max_hp} MP:{player.mana}/{player.max_mana} "
+            f"ATK:{player.atk} DEF:{player.ac} Lvl:{player.level} "
+            f"XP:{player.xp}/{xp_next} Гл:{state.depth} {biome_name} G:{player.gold} Сыт:{satiety}{status_icons}"
+        )
     stdscr.attron(curses.color_pair(10))
     stdscr.addstr(0, 0, hud[: width - 1])
     stdscr.attroff(curses.color_pair(10))
 
     # Легенда
-    legend = (
-        "☻ты ▼вниз ░стена ·пол ☠враг @NPC "
-        "!зелье ?свит %еда $зол /оруж [брон =кольцо +книга \"арт ■сунд _алтар Fфонтан"
-    )
+    if use_unicode:
+        legend = (
+            "☻ты ▼вниз ░стена ·пол ☠враг @NPC "
+            "!зелье ?свит %еда $зол /оруж [брон =кольцо +книга \"арт ■сунд _алтар Fфонтан"
+        )
+    else:
+        legend = (
+            "@ты >вниз #стена .пол !враг@NPC "
+            "!зелье ?свит %еда $зол /оруж [брон =кольцо +книга \"арт Cсунд _алтар Fфонтан"
+        )
     try:
         stdscr.attron(curses.color_pair(9))
         stdscr.addstr(1, 0, legend[: width - 1])
@@ -184,80 +215,80 @@ def render_map(
             explored = dungeon.explored[y][x]
 
             if visible:
-                char = tile.get("unicode_char", tile["char"])
+                char = _data_char(tile, use_unicode)
                 attr = curses.color_pair(tile["color_visible"])
             elif explored:
-                char = tile.get("unicode_char", tile["char"])
+                char = _data_char(tile, use_unicode)
                 attr = curses.color_pair(tile["color_fog"])
             else:
                 char = " "
                 attr = curses.color_pair(5)
 
-            # Базовые Unicode-замены
+            # Базовые замены стен/пола/лестницы
             if tile["type"] == "wall":
-                char = TILE_UNICODE["wall"]
+                char = _tile_char("wall", use_unicode)
             elif tile["type"] == "floor":
-                char = TILE_UNICODE["floor"]
+                char = _tile_char("floor", use_unicode)
 
-            # Рисуем лестницу поверх пола
+            # Лестница
             if (x, y) == dungeon.stairs and (visible or explored):
-                char = TILE_UNICODE["stairs"]
+                char = _tile_char("stairs", use_unicode)
                 attr = curses.color_pair(8)
 
-            # Рисуем hazard поверх пола (если виден или исследован)
+            # Опасности
             if (visible or explored) and (x, y) in dungeon.hazards:
                 from world.hazards import get_hazard
                 hazard = get_hazard(dungeon.hazards[(x, y)])
                 if hazard:
-                    char = hazard.get("unicode_char", hazard["char"])
+                    char = _data_char(hazard, use_unicode)
                     attr = color_attr(hazard["color"])
 
-            # Рисуем revealed traps
+            # Обнаруженные ловушки
             if visible and (x, y) in dungeon.revealed_traps and (x, y) in dungeon.traps:
                 from world.traps import get_trap
                 trap = get_trap(dungeon.traps[(x, y)])
                 if trap:
-                    char = trap.get("unicode_char", trap["char_revealed"])
+                    char = _data_char(trap, use_unicode)
                     attr = color_attr(trap["color_revealed"])
 
-            # Рисуем предметы (если видимы)
+            # Предметы
             if visible and (x, y) in items_on_floor and items_on_floor[(x, y)]:
                 item_id = items_on_floor[(x, y)][0]
                 from content.items import get_item
                 item_data = get_item(item_id)
                 if item_data:
-                    char = item_data.get("unicode_char", item_data["char"])
+                    char = _data_char(item_data, use_unicode)
                     attr = curses.color_pair(ITEM_TYPE_COLORS.get(item_data["type"], 7))
 
-            # Рисуем интерактивные объекты спецкомнат (если видимы)
+            # Интерактивные объекты
             if visible and (x, y) in dungeon.interactables:
                 interact = dungeon.interactables[(x, y)]
                 if not interact.get("used", False):
                     from systems.interactables import get_interactable
                     it_data = get_interactable(interact.get("interactable_id", ""))
                     if it_data:
-                        char = it_data.get("unicode_char", it_data["char"])
+                        char = _data_char(it_data, use_unicode)
                         attr = color_attr(it_data["color"])
 
-            # Рисуем NPC (если видимы) — поверх предметов
+            # NPC
             if visible:
                 for npc in state.npcs:
                     if npc.x == x and npc.y == y:
-                        char = getattr(npc, "unicode_char", npc.char)
+                        char = _data_char({"char": npc.char, "unicode_char": getattr(npc, "unicode_char", npc.char)}, use_unicode)
                         attr = color_attr(npc.color)
                         break
 
-            # Рисуем мобов (если видимы) — поверх NPC
+            # Мобы
             if visible:
                 for mob in mobs:
                     if mob.x == x and mob.y == y and mob.alive:
-                        char = getattr(mob, "unicode_char", mob.char)
+                        char = _data_char({"char": mob.char, "unicode_char": getattr(mob, "unicode_char", mob.char)}, use_unicode)
                         attr = curses.color_pair(mob.color_pair)
                         break
 
             # Игрок всегда поверх
             if player.x == x and player.y == y:
-                char = TILE_UNICODE["player"]
+                char = _tile_char("player", use_unicode)
                 attr = curses.color_pair(1)
 
             _draw_char(stdscr, map_top + y, x, char, attr)
@@ -271,7 +302,7 @@ def render_map(
         except curses.error:
             pass
 
-    # Меню Esc (не рисуем, если показывается level-up меню — оно само всё рисует)
+    # Меню Esc
     if menu_mode and not level_up_mode:
         _render_menu(stdscr, menu_options, menu_selection)
 

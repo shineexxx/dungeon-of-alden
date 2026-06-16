@@ -5,6 +5,8 @@ from __future__ import annotations
 import curses
 from typing import TYPE_CHECKING
 
+from systems.settings import Settings, load_settings, save_settings
+
 if TYPE_CHECKING:
     from curses import _CursesWindow
     from systems.game_state import GameState
@@ -13,6 +15,7 @@ if TYPE_CHECKING:
 MENU_OPTIONS = [
     ("new_game", "Новая игра"),
     ("load_game", "Загрузить игру"),
+    ("settings", "Настройки"),
     ("hall_of_fame", "Зал славы"),
     ("quit", "Выход"),
 ]
@@ -96,6 +99,53 @@ def select_save_slot(stdscr: "_CursesWindow", slots: list[str], title: str) -> s
             selection = (selection + 1) % len(slots)
         elif key in (10, 13, curses.KEY_ENTER):
             return slots[selection]
+
+
+def show_settings_menu(stdscr: "_CursesWindow", settings: "Settings") -> None:
+    """Меню настроек."""
+    options = [
+        ("use_unicode", "Графика", ["Unicode", "Классика"], settings.use_unicode),
+    ]
+    selection = 0
+    while True:
+        stdscr.clear()
+        height, width = stdscr.getmaxyx()
+        title = " НАСТРОЙКИ "
+        try:
+            stdscr.attron(curses.color_pair(9))
+            stdscr.addstr(1, (width - len(title)) // 2, title)
+            stdscr.attroff(curses.color_pair(9))
+        except curses.error:
+            pass
+
+        for idx, (key, label, values, current) in enumerate(options):
+            prefix = "> " if idx == selection else "  "
+            current_label = values[0] if current else values[1]
+            line = f"{prefix}{label}: {current_label}"
+            try:
+                stdscr.addstr(3 + idx, 2, line[: width - 4])
+            except curses.error:
+                pass
+
+        try:
+            stdscr.addstr(height - 2, 2, "↑↓ выбор, Enter — переключить, Esc — назад", curses.color_pair(9))
+        except curses.error:
+            pass
+        stdscr.refresh()
+
+        key = stdscr.getch()
+        if key in (27,):
+            save_settings(settings)
+            return
+        if key == curses.KEY_UP:
+            selection = (selection - 1) % len(options)
+        elif key == curses.KEY_DOWN:
+            selection = (selection + 1) % len(options)
+        elif key in (10, 13, curses.KEY_ENTER):
+            opt_key, _, _, current = options[selection]
+            new_value = not current
+            setattr(settings, opt_key, new_value)
+            options[selection] = (opt_key, options[selection][1], options[selection][2], new_value)
 
 
 def show_message(stdscr: "_CursesWindow", message: str) -> None:

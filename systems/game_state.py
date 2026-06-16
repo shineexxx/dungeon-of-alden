@@ -11,6 +11,7 @@ from entities.npcs import NPC
 from world.dungeon import Dungeon, Room, generate_dungeon, place_entities, place_player
 from systems.identification import generate_identification_state
 from systems.journal import Journal
+from systems.settings import Settings
 
 
 @dataclass
@@ -32,6 +33,7 @@ class GameState:
     journal: Journal = field(default_factory=Journal)
     visited_events: set[str] = field(default_factory=set)
     final_boss_spawned: bool = False
+    settings: Settings = field(default_factory=Settings)
 
     def __post_init__(self) -> None:
         # Убедимся, что rng инициализирован с seed
