@@ -248,7 +248,10 @@ def render_map(
                 from world.traps import get_trap
                 trap = get_trap(dungeon.traps[(x, y)])
                 if trap:
-                    char = _data_char(trap, use_unicode)
+                    if use_unicode:
+                        char = trap.get("unicode_char", trap["char_revealed"])
+                    else:
+                        char = trap["char_revealed"]
                     attr = color_attr(trap["color_revealed"])
 
             # Предметы
