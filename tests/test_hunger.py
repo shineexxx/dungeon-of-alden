@@ -1,6 +1,8 @@
-"""Тест эффектов предметов."""
+"""Тест голода."""
 
+import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Подавляем curses
 sys.modules["curses"] = type(sys)("curses")
@@ -24,40 +26,30 @@ curses_mod.noecho = lambda: None
 curses_mod.curs_set = lambda *a: None
 
 from systems.game_state import GameState
-from systems.effects import apply_effect
+from engine.game_loop import _apply_hunger
 from systems.stats import recalculate_stats
 
 
-def test_effects():
+def test_hunger():
     state = GameState(seed=42, depth=1)
     state.generate_level()
     recalculate_stats(state.player)
 
-    # Лечение
-    state.player.hp = 10
-    msg = apply_effect("heal", state.player, state, (8, 15))
-    print(msg)
-    assert state.player.hp > 10
+    # Много ходов
+    for turn in range(1, 101):
+        state.turn = turn
+        _apply_hunger(state)
 
-    # Опыт
-    old_level = state.player.level
-    msg = apply_effect("experience", state.player, state, 50)
-    print(msg)
-    assert state.player.level > old_level or state.player.xp > 0
+    print(f"After 100 turns satiety: {state.player.satiety}")
+    assert state.player.satiety < 100
 
-    # Еда
-    state.player.satiety = 50
-    msg = apply_effect("food", state.player, state, 30)
-    print(msg)
-    assert state.player.satiety == 80
+    # Еда восстанавливает сытость
+    state.player.satiety = 30
+    _apply_hunger(state)  # один ход
+    print(f"Satiety status: {state.player.satiety_status()}")
 
-    # Карта
-    msg = apply_effect("mapping", state.player, state, None)
-    print(msg)
-    assert all(state.dungeon.explored[y][x] for y in range(state.dungeon.height) for x in range(state.dungeon.width))
-
-    print("Effects test passed")
+    print("Hunger test passed")
 
 
 if __name__ == "__main__":
-    test_effects()
+    test_hunger()

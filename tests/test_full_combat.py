@@ -1,6 +1,8 @@
-"""Тест боя headless."""
+"""Тест полного цикла боя с лутом и опытом."""
 
+import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Подавляем curses
 sys.modules["curses"] = type(sys)("curses")
@@ -30,30 +32,34 @@ from engine.game_loop import _try_move, _after_player_turn
 from systems.stats import recalculate_stats
 
 
-def test_combat():
+def test_kill_and_loot():
     state = GameState(seed=42, depth=1)
     state.generate_level()
     recalculate_stats(state.player)
-    # Ставим моба рядом с игроком
-    mob = Mob.from_data("rat", state.player.x + 1, state.player.y)
+    # Ставим гоблина вплотную (у него есть шанс лута)
+    mob = Mob.from_data("goblin", state.player.x + 1, state.player.y)
     state.mobs = [mob]
     compute_fov(state.dungeon, state.player.x, state.player.y, state.player.fov_radius)
 
-    print(f"Player: ({state.player.x},{state.player.y}) HP:{state.player.hp} ATK:{state.player.atk}")
-    print(f"Rat: ({mob.x},{mob.y}) HP:{mob.hp} AI:{mob.ai} speed:{mob.speed}")
+    initial_xp = state.player.xp
+    initial_gold = state.player.gold
 
-    # Игрок бьёт моба
-    _try_move(state, 1, 0)
-    print(f"After player attacks rat: rat HP {mob.hp}, alive {mob.alive}")
-
-    # Моб бьёт игрока (если жив)
-    if mob.alive:
+    # Бьём до смерти (гоблин тоже будет бить в ответ)
+    for _ in range(20):
+        if not mob.alive:
+            break
+        _try_move(state, 1 if mob.x > state.player.x else (-1 if mob.x < state.player.x else 0),
+                        1 if mob.y > state.player.y else (-1 if mob.y < state.player.y else 0))
         _after_player_turn(state)
-        print(f"After rat turn: player HP {state.player.hp}")
+        if not state.player.is_alive():
+            break
 
-    print(f"Final: player HP {state.player.hp}, rat alive {mob.alive}, xp {state.player.xp}, gold {state.player.gold}")
-    print("Combat test passed")
+    assert mob.alive is False, "Mob should be dead"
+    assert state.player.xp > initial_xp, "Should gain XP"
+    assert state.player.gold >= initial_gold, "Should gain gold"
+    print(f"Items on mob cell: {state.items_on_floor.get((mob.x, mob.y), [])}")
+    print("Full combat test passed")
 
 
 if __name__ == "__main__":
-    test_combat()
+    test_kill_and_loot()

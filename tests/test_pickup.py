@@ -1,6 +1,8 @@
-"""Тест голода."""
+"""Тест подбора предметов."""
 
+import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Подавляем curses
 sys.modules["curses"] = type(sys)("curses")
@@ -24,30 +26,24 @@ curses_mod.noecho = lambda: None
 curses_mod.curs_set = lambda *a: None
 
 from systems.game_state import GameState
-from engine.game_loop import _apply_hunger
+from engine.game_loop import _pickup
 from systems.stats import recalculate_stats
 
 
-def test_hunger():
+def test_pickup():
     state = GameState(seed=42, depth=1)
     state.generate_level()
     recalculate_stats(state.player)
 
-    # Много ходов
-    for turn in range(1, 101):
-        state.turn = turn
-        _apply_hunger(state)
+    # Кладём оружие и зелье под игроком
+    state.items_on_floor[(state.player.x, state.player.y)] = ["short_sword", "potion_healing"]
+    _pickup(state)
 
-    print(f"After 100 turns satiety: {state.player.satiety}")
-    assert state.player.satiety < 100
-
-    # Еда восстанавливает сытость
-    state.player.satiety = 30
-    _apply_hunger(state)  # один ход
-    print(f"Satiety status: {state.player.satiety_status()}")
-
-    print("Hunger test passed")
+    assert "short_sword" in state.player.inventory
+    assert "potion_healing" in state.player.inventory
+    print(f"Inventory: {state.player.inventory}")
+    print("Pickup test passed")
 
 
 if __name__ == "__main__":
-    test_hunger()
+    test_pickup()
