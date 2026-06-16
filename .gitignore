@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Game saves and runtime data
+saves/
+saves/hall_of_fame.json
+
+# OS
+.DS_Store
+Thumbs.db
