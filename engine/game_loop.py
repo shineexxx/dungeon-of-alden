@@ -189,8 +189,11 @@ def run_game(stdscr: "_CursesWindow", state: "GameState") -> None:
         action = get_action(key)
 
         if action.type == "quit":
-            save_game(state, AUTOSAVE_SLOT)
-            return
+            if _confirm_exit(stdscr):
+                save_game(state, AUTOSAVE_SLOT)
+                return
+            log_lines = state.log[-10:]
+            continue
 
         if action.type == "menu":
             menu_mode = True
@@ -989,11 +992,31 @@ def _check_victory(state: "GameState") -> bool:
     return True
 
 
+def _confirm_exit(stdscr: "_CursesWindow") -> bool:
+    """Спросить подтверждение выхода."""
+    height, width = stdscr.getmaxyx()
+    msg = "Выйти из игры? Несохранённый прогресс сохранится в автосейв."
+    from engine.text_utils import show_wrapped_message
+
+    show_wrapped_message(stdscr, msg + " Enter — да, Esc — нет.")
+    while True:
+        key = stdscr.getch()
+        if key in (10, 13, curses.KEY_ENTER):
+            return True
+        if key in (27, ord("n"), ord("N")):
+            return False
+
+
 def _handle_death(stdscr: "_CursesWindow", state: "GameState") -> None:
     """Обработать смерть игрока."""
     from systems.hall_of_fame import record_run
 
-    show_message(stdscr, f"ВЫ ПОГИБЛИ на глубине {state.depth}. Счёт: {state.score}")
+    msg = f"ВЫ ПОГИБЛИ на глубине {state.depth}. Счёт: {state.score}. Нажмите Enter для выхода."
+    show_message(stdscr, msg)
+    while True:
+        key = stdscr.getch()
+        if key in (10, 13, curses.KEY_ENTER):
+            break
     record_run(state.player_name, state, victory=False)
     delete_save(AUTOSAVE_SLOT)
 
@@ -1002,6 +1025,11 @@ def _handle_victory(stdscr: "_CursesWindow", state: "GameState") -> None:
     """Обработать победу над финальным боссом."""
     from systems.hall_of_fame import record_run
 
-    show_message(stdscr, f"ПОБЕДА! Вы уничтожили Тёмного Владыку! Счёт: {state.score}")
+    msg = f"ПОБЕДА! Вы уничтожили Тёмного Владыку! Счёт: {state.score}. Нажмите Enter для выхода."
+    show_message(stdscr, msg)
+    while True:
+        key = stdscr.getch()
+        if key in (10, 13, curses.KEY_ENTER):
+            break
     record_run(state.player_name, state, victory=True)
     delete_save(AUTOSAVE_SLOT)

@@ -5,6 +5,8 @@ from __future__ import annotations
 import curses
 from typing import TYPE_CHECKING
 
+from engine.text_utils import add_wrapped_text, wrap_text
+
 if TYPE_CHECKING:
     from curses import _CursesWindow
 
@@ -82,17 +84,15 @@ def show_help(stdscr: "_CursesWindow") -> None:
         except curses.error:
             pass
 
-        for idx, line in enumerate(lines):
-            try:
-                stdscr.addstr(4 + idx, 2, line[: width - 4])
-            except curses.error:
-                pass
+        y = 4
+        for line in lines:
+            used = add_wrapped_text(stdscr, y, 2, line, width - 4)
+            y += used + 1
+            if y >= height - 3:
+                break
 
         footer = f"Страница {page + 1}/{len(SECTIONS)}. ← → — страницы, Esc — закрыть."
-        try:
-            stdscr.addstr(height - 2, 2, footer[: width - 4], curses.color_pair(9))
-        except curses.error:
-            pass
+        add_wrapped_text(stdscr, height - 2, 2, footer, width - 4, curses.color_pair(9))
 
         stdscr.refresh()
         key = stdscr.getch()

@@ -178,7 +178,10 @@ def render_map(
             f"XP:{player.xp}/{xp_next} Гл:{state.depth} {biome_name} G:{player.gold} Сыт:{satiety}{status_icons}"
         )
     stdscr.attron(curses.color_pair(10))
-    stdscr.addstr(0, 0, hud[: width - 1])
+    try:
+        stdscr.addstr(0, 0, hud[: width - 1])
+    except curses.error:
+        pass
     stdscr.attroff(curses.color_pair(10))
 
     # Легенда
@@ -314,13 +317,16 @@ def render_map(
             pass
 
     # Лог событий внизу экрана
+    from engine.text_utils import add_wrapped_text
+
     log_y_start = height - 3
     stdscr.hline(log_y_start - 1, 0, curses.ACS_HLINE, width - 1)
-    for i, line in enumerate(log_lines[-3:]):
-        try:
-            stdscr.addstr(log_y_start + i, 0, line[: width - 1])
-        except curses.error:
-            pass
+    y = log_y_start
+    for line in log_lines[-3:]:
+        used = add_wrapped_text(stdscr, y, 0, line, width - 1, max_lines=2)
+        y += used
+        if y >= height:
+            break
 
     # Меню Esc
     if menu_mode and not level_up_mode:
@@ -418,16 +424,6 @@ def _render_menu(
 
 
 def show_message(stdscr: "curses._CursesWindow", message: str) -> None:
-    """Показать модальное сообщение и ждать любой клавиши."""
-    height, width = stdscr.getmaxyx()
-    msg = message[: width - 4]
-    y = height // 2
-    x = max(0, (width - len(msg)) // 2)
-    try:
-        stdscr.addstr(y - 1, x, " " * len(msg), curses.color_pair(9))
-        stdscr.addstr(y, x, msg, curses.color_pair(9))
-        stdscr.addstr(y + 1, x, " " * len(msg), curses.color_pair(9))
-    except curses.error:
-        pass
-    stdscr.refresh()
-    stdscr.getch()
+    """Показать модальное сообщение с переносом и ждать любой клавиши."""
+    from engine.text_utils import show_wrapped_message
+    show_wrapped_message(stdscr, message)
