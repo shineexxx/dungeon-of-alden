@@ -104,6 +104,25 @@ def is_identified(game_state: "GameState", item_id: str) -> bool:
     return False
 
 
+def get_description(game_state: "GameState", item_id: str) -> str:
+    """Вернуть описание предмета с учётом опознания."""
+    from content.items import get_item
+
+    data = get_item(item_id)
+    if not data:
+        return ""
+
+    if is_identified(game_state, item_id):
+        return data.get("description", "")
+
+    item_type = data["type"]
+    if item_type == "potion":
+        return "Зелье неизвестного содержимого. Пить на свой страх и риск."
+    if item_type == "scroll":
+        return "Свиток с неразборчивыми письменами. Читать на свой страх и риск."
+    return data.get("description", "")
+
+
 def identify_item(game_state: "GameState", item_id: str) -> str:
     """Опознать предмет. Возвращает сообщение."""
     from content.items import get_item

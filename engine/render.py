@@ -342,29 +342,33 @@ def render_map(
 
 
 def _floor_item_hint(state: "GameState", player: "Player") -> str:
-    """Вернуть подсказку о предмете/объекте под ногами игрока."""
+    """Вернуть подсказку о предметах/объектах под ногами игрока."""
     from systems.identification import get_display_name
 
     pos = (player.x, player.y)
+    parts: list[str] = []
+
     items = state.items_on_floor.get(pos, [])
     if items:
-        parts = []
         for item_id in items:
             parts.append(get_display_name(state, item_id))
-        return ", ".join(parts)
+
     if pos in state.dungeon.interactables:
         interact = state.dungeon.interactables[pos]
         if not interact.get("used", False):
             from systems.interactables import get_interactable
             it_data = get_interactable(interact.get("interactable_id", ""))
             if it_data:
-                return it_data["name"].capitalize() + " (нажми T/E)"
+                parts.append(f"{it_data['name']} (T/E)")
+
     for npc in state.npcs:
         if npc.x == player.x and npc.y == player.y:
-            return f"{npc.name} (нажми T/E)"
+            parts.append(f"{npc.name} (T/E)")
+
     if pos == state.dungeon.stairs:
-        return "Лестница вниз (Пробел/Enter)"
-    return ""
+        parts.append("Лестница вниз (Пробел/Enter)")
+
+    return ", ".join(parts)
 
 
 def _status_icons(player: "Player") -> str:

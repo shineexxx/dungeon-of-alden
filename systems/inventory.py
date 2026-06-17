@@ -148,11 +148,9 @@ class InventoryUI:
         desc_y = help_y - 4
         selected_id = self._selected_item_id()
         if selected_id:
-            from content.items import get_item
-            data = get_item(selected_id)
-            if data:
-                desc = data.get("description", "")
-                self.stdscr.addstr(desc_y, 2, desc[: width - 4])
+            from systems.identification import get_description
+            desc = get_description(self.game_state, selected_id)
+            self.stdscr.addstr(desc_y, 2, desc[: width - 4])
 
         # Сообщение
         if self._message:
