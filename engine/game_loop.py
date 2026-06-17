@@ -7,6 +7,7 @@ import random
 from typing import TYPE_CHECKING
 
 from engine.fov import compute_fov
+from engine.help import show_help
 from engine.input_handler import get_action
 from engine.render import init_colors, render_map, show_message
 from engine.targeting import get_affected_positions, select_target
@@ -210,6 +211,11 @@ def run_game(stdscr: "_CursesWindow", state: "GameState") -> None:
 
         if action.type == "journal":
             show_journal(stdscr, state.journal)
+            log_lines = state.log[-10:]
+            continue
+
+        if action.type == "help":
+            show_help(stdscr)
             log_lines = state.log[-10:]
             continue
 
@@ -919,6 +925,7 @@ def _regenerate_mana_tick(player) -> None:
 def _pickup(state: "GameState") -> None:
     """Подобрать предметы с пола."""
     from content.items import get_item
+    from systems.identification import get_display_name, is_identified
 
     pos = (state.player.x, state.player.y)
     items = state.items_on_floor.get(pos, [])
@@ -942,7 +949,10 @@ def _pickup(state: "GameState") -> None:
                 remaining.append(item_id)
                 continue
             state.player.inventory[item_id] = state.player.inventory.get(item_id, 0) + 1
-            picked.append(data["name"])
+            display_name = get_display_name(state, item_id)
+            if not is_identified(state, item_id):
+                display_name += " (неопознано)"
+            picked.append(display_name)
 
     if remaining:
         state.items_on_floor[pos] = remaining

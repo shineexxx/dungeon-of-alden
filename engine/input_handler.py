@@ -48,6 +48,8 @@ def get_action(key: int) -> Action:
         return Action("interact")
     if key == ord("j") or key == ord("J"):
         return Action("journal")
+    if key == ord("?") or key == ord("h") or key == ord("H"):
+        return Action("help")
     if key == ord(" ") or key == 13:  # пробел / enter
         return Action("use_stairs")
     if key == 27:  # Esc

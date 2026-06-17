@@ -326,11 +326,87 @@ def smith_ui(stdscr: "_CursesWindow", player: "Player", npc: NPC, state: "GameSt
             return f"{get_item(item_id)['name']} улучшен."
 
 
+def prisoner_ui(stdscr: "_CursesWindow", state: "GameState", npc: NPC) -> str:
+    """UI пленника: освободить или оставить."""
+    import random
+
+    options = [
+        ("free", "Освободить (требуется просто подойти и помочь)"),
+        ("leave", "Уйти"),
+    ]
+    selection = 0
+    while True:
+        stdscr.clear()
+        height, width = stdscr.getmaxyx()
+        title = f" {npc.name} "
+        try:
+            stdscr.attron(curses.color_pair(9))
+            stdscr.addstr(0, (width - len(title)) // 2, title)
+            stdscr.attroff(curses.color_pair(9))
+        except curses.error:
+            pass
+
+        try:
+            stdscr.addstr(2, 2, npc.talk(state.player)[: width - 4])
+        except curses.error:
+            pass
+
+        for idx, (action_id, label) in enumerate(options):
+            prefix = "> " if idx == selection else "  "
+            try:
+                stdscr.addstr(4 + idx, 2, f"{prefix}{label}"[: width - 4])
+            except curses.error:
+                pass
+
+        try:
+            stdscr.addstr(height - 2, 2, "↑↓ выбор, Enter — подтвердить, Esc — уйти", curses.color_pair(9))
+        except curses.error:
+            pass
+        stdscr.refresh()
+
+        key = stdscr.getch()
+        if key in (27,):
+            return npc.farewell
+        if key == curses.KEY_UP:
+            selection = (selection - 1) % len(options)
+        elif key == curses.KEY_DOWN:
+            selection = (selection + 1) % len(options)
+        elif key in (10, 13, curses.KEY_ENTER):
+            action_id = options[selection][0]
+            if action_id == "leave":
+                return npc.farewell
+
+            # Освобождаем пленника
+            state.npcs.remove(npc)
+            rng = state.rng
+            reward_type = rng.choice(["gold", "item", "xp"])
+            if reward_type == "gold":
+                amount = rng.randint(50, 100)
+                state.player.gold += amount
+                return f"Вы освободили {npc.name}. В благодарность он отдал {amount} золота."
+            elif reward_type == "xp":
+                amount = rng.randint(40, 80)
+                from systems.progression import add_xp
+                add_xp(state.player, amount)
+                return f"Вы освободили {npc.name}. Его история вдохновила вас (+{amount} опыта)."
+            else:
+                from content.items import items_for_depth, get_item
+                pool = items_for_depth(state.depth)
+                if pool:
+                    item_id = rng.choice(pool)
+                    state.player.inventory[item_id] = state.player.inventory.get(item_id, 0) + 1
+                    item_name = get_item(item_id)["name"]
+                    return f"Вы освободили {npc.name}. Он отдал вам {item_name}."
+                state.player.gold += 50
+                return f"Вы освободили {npc.name}. Он отдал вам 50 золота."
+
+
 def interact_with_npc(stdscr: "_CursesWindow", state: "GameState", npc: NPC) -> str:
     """Взаимодействие с NPC: диалог, торговля или кузнец."""
     if npc.id == "smith":
         return smith_ui(stdscr, state.player, npc, state)
     if npc.id in ("merchant", "alchemist", "spellvendor"):
         return trade_ui(stdscr, state.player, npc, state)
-    # Prisoner обрабатывается как событие
+    if npc.id == "prisoner":
+        return prisoner_ui(stdscr, state, npc)
     return npc.talk(state.player)

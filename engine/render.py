@@ -185,12 +185,12 @@ def render_map(
     if use_unicode:
         legend = (
             "☻ты ▼вниз ░стена ·пол ☠враг @NPC "
-            "!зелье ?свит %еда $зол /оруж [брон =кольцо +книга \"арт ■сунд _алтар Fфонтан"
+            "!зелье ?свит %еда $зол /оруж [брон =кольцо +книга \"арт ■сунд _алтар Fфонтан ?справка"
         )
     else:
         legend = (
             "@ты >вниз #стена .пол !враг@NPC "
-            "!зелье ?свит %еда $зол /оруж [брон =кольцо +книга \"арт Cсунд _алтар Fфонтан"
+            "!зелье ?свит %еда $зол /оруж [брон =кольцо +книга \"арт Cсунд _алтар Fфонтан ?справка"
         )
     try:
         stdscr.attron(curses.color_pair(9))
@@ -296,6 +296,17 @@ def render_map(
 
             _draw_char(stdscr, map_top + y, x, char, attr)
 
+    # Подсказка предмета под ногами
+    floor_hint = _floor_item_hint(state, player)
+    if floor_hint:
+        hint_text = f"Под ногами: {floor_hint}"
+        try:
+            stdscr.attron(curses.color_pair(9))
+            stdscr.addstr(height - 4, 0, hint_text[: width - 1])
+            stdscr.attroff(curses.color_pair(9))
+        except curses.error:
+            pass
+
     # Лог событий внизу экрана
     log_y_start = height - 3
     stdscr.hline(log_y_start - 1, 0, curses.ACS_HLINE, width - 1)
@@ -310,6 +321,32 @@ def render_map(
         _render_menu(stdscr, menu_options, menu_selection)
 
     stdscr.refresh()
+
+
+def _floor_item_hint(state: "GameState", player: "Player") -> str:
+    """Вернуть подсказку о предмете/объекте под ногами игрока."""
+    from systems.identification import get_display_name
+
+    pos = (player.x, player.y)
+    items = state.items_on_floor.get(pos, [])
+    if items:
+        parts = []
+        for item_id in items:
+            parts.append(get_display_name(state, item_id))
+        return ", ".join(parts)
+    if pos in state.dungeon.interactables:
+        interact = state.dungeon.interactables[pos]
+        if not interact.get("used", False):
+            from systems.interactables import get_interactable
+            it_data = get_interactable(interact.get("interactable_id", ""))
+            if it_data:
+                return it_data["name"].capitalize() + " (нажми T/E)"
+    for npc in state.npcs:
+        if npc.x == player.x and npc.y == player.y:
+            return f"{npc.name} (нажми T/E)"
+    if pos == state.dungeon.stairs:
+        return "Лестница вниз (Пробел/Enter)"
+    return ""
 
 
 def _status_icons(player: "Player") -> str:
