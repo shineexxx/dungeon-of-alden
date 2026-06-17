@@ -320,6 +320,12 @@ def render_map(
     from engine.text_utils import add_wrapped_text
 
     log_y_start = height - 3
+    # Очистить область лога, чтобы не оставался мусор от предыдущих кадров
+    for clear_y in range(log_y_start, height):
+        try:
+            stdscr.addstr(clear_y, 0, " " * (width - 1))
+        except curses.error:
+            pass
     stdscr.hline(log_y_start - 1, 0, curses.ACS_HLINE, width - 1)
     y = log_y_start
     for line in log_lines[-3:]:

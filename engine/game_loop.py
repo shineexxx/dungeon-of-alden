@@ -1011,7 +1011,12 @@ def _handle_death(stdscr: "_CursesWindow", state: "GameState") -> None:
     """Обработать смерть игрока."""
     from systems.hall_of_fame import record_run
 
-    msg = f"ВЫ ПОГИБЛИ на глубине {state.depth}. Счёт: {state.score}. Нажмите Enter для выхода."
+    recent = " | ".join(state.log[-5:])
+    msg = (
+        f"ВЫ ПОГИБЛИ на глубине {state.depth}. Счёт: {state.score}.\n\n"
+        f"Последние события:\n{recent}\n\n"
+        "Нажмите Enter для выхода."
+    )
     show_message(stdscr, msg)
     while True:
         key = stdscr.getch()

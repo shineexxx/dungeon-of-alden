@@ -62,22 +62,36 @@ def add_wrapped_text(
 
 
 def show_wrapped_message(stdscr: "_CursesWindow", message: str) -> None:
-    """Показать модальное сообщение с переносом и ждать любой клавиши."""
+    """Показать модальное сообщение с переносом и ждать любой клавиши.
+
+    Поддерживает \\n для явного разрыва строки.
+    """
     height, width = stdscr.getmaxyx()
     usable_width = max(10, width - 4)
-    lines = wrap_text(message, usable_width)
+
+    # Разбиваем по явным переносам и оборачиваем каждую часть
+    all_lines: list[str] = []
+    for paragraph in message.split("\n"):
+        if paragraph:
+            all_lines.extend(wrap_text(paragraph, usable_width))
+        else:
+            all_lines.append("")
+
+    lines = all_lines
     box_h = len(lines) + 2
     box_w = min(usable_width + 2, width - 2)
     y0 = max(0, (height - box_h) // 2)
     x0 = max(0, (width - box_w) // 2)
 
-    # Рамка
-    for y in range(box_h):
-        for x in range(box_w):
+    # Очистить область под сообщением
+    for y in range(y0, y0 + box_h):
+        for x in range(x0, x0 + box_w):
             try:
-                stdscr.addch(y0 + y, x0 + x, " ", curses.color_pair(9))
+                stdscr.addch(y, x, " ", curses.color_pair(9))
             except curses.error:
                 pass
+
+    # Рамка
     for x in range(1, box_w - 1):
         try:
             stdscr.addch(y0, x0 + x, "-", curses.color_pair(9))
