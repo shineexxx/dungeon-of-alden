@@ -606,9 +606,13 @@ def _search_traps(state: "GameState") -> str:
             if state.rng.random() < chance:
                 state.dungeon.revealed_traps.add((x, y))
                 found += 1
+
+    # Визуальный эффект поиска: подсветка радиуса на следующий ход
+    state.search_highlight_turns = 2
+
     if found:
-        return f"Вы обнаружили {found} ловушек!"
-    return "Вы ничего не нашли."
+        return f"Вы осмотрелись и обнаружили {found} ловушек!"
+    return "Вы осмотрелись, но ничего не нашли."
 
 
 def _player_attack(state: "GameState", mob) -> None:
@@ -726,6 +730,9 @@ def _on_mob_death(state: "GameState", mob) -> None:
 
 def _after_player_turn(state: "GameState") -> None:
     """Ходы мобов после игрока с учётом скорости (энергия)."""
+    if state.search_highlight_turns > 0:
+        state.search_highlight_turns -= 1
+
     for mob in state.mobs:
         if not mob.alive:
             continue

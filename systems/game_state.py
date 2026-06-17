@@ -34,6 +34,7 @@ class GameState:
     visited_events: set[str] = field(default_factory=set)
     final_boss_spawned: bool = False
     settings: Settings = field(default_factory=Settings)
+    search_highlight_turns: int = 0
 
     def __post_init__(self) -> None:
         # Убедимся, что rng инициализирован с seed
@@ -98,6 +99,8 @@ class GameState:
             "journal": self.journal.to_dict(),
             "visited_events": sorted(self.visited_events),
             "final_boss_spawned": self.final_boss_spawned,
+            "settings": self.settings.to_dict(),
+            "search_highlight_turns": self.search_highlight_turns,
             "dungeon": {
                 "width": self.dungeon.width,
                 "height": self.dungeon.height,
@@ -140,6 +143,8 @@ class GameState:
         state.journal = Journal.from_dict(data.get("journal", {}))
         state.visited_events = set(data.get("visited_events", []))
         state.final_boss_spawned = data.get("final_boss_spawned", False)
+        state.settings = Settings.from_dict(data.get("settings", {}))
+        state.search_highlight_turns = data.get("search_highlight_turns", 0)
 
         # Восстановление предметов
         items_raw = data.get("items_on_floor", {})

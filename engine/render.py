@@ -289,6 +289,12 @@ def render_map(
                         attr = curses.color_pair(mob.color_pair)
                         break
 
+            # Подсветка области поиска (визуальный эффект)
+            if state.search_highlight_turns > 0 and visible and tile["type"] == "floor":
+                dist = abs(player.x - x) + abs(player.y - y)
+                if dist <= 2:
+                    attr = curses.color_pair(15)  # cyan highlight
+
             # Игрок всегда поверх
             if player.x == x and player.y == y:
                 char = _tile_char("player", use_unicode)

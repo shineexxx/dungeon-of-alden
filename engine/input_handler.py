@@ -36,7 +36,7 @@ def get_action(key: int) -> Action:
         return Action("pickup")
     if key == ord("d") or key == ord("D"):
         return Action("drop")
-    if key == ord("s") or key == ord("S"):
+    if key == ord("f") or key == ord("F"):
         return Action("search")
     if key == ord("i") or key == ord("I"):
         return Action("inventory")
