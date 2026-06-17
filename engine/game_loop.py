@@ -264,6 +264,7 @@ def run_game(stdscr: "_CursesWindow", state: "GameState") -> None:
             _tick_player_status_effects(state)
             tick_cooldowns(state.player)
             _regenerate_mana_tick(state.player)
+            _passive_trap_detection(state)
             compute_fov(state.dungeon, state.player.x, state.player.y, state.player.fov_radius)
             log_lines = state.log[-10:]
             if not state.player.is_alive():
@@ -298,6 +299,7 @@ def run_game(stdscr: "_CursesWindow", state: "GameState") -> None:
             _tick_player_status_effects(state)
             tick_cooldowns(state.player)
             _regenerate_mana_tick(state.player)
+            _passive_trap_detection(state)
             compute_fov(state.dungeon, state.player.x, state.player.y, state.player.fov_radius)
 
         log_lines = state.log[-10:]
@@ -585,6 +587,33 @@ def _apply_trap_effect(state: "GameState", trap: dict, target, is_player: bool) 
         dmg = random.randint(power[0], power[1])
         target.take_damage(dmg)
         state.log_message(f"Руна взрывается, {name} получаете {dmg} магического урона!" if is_player else f"Руна взрывается!")
+
+
+def _passive_trap_detection(state: "GameState") -> None:
+    """Пассивный шанс заметить ловушку в радиусе 1 каждый ход."""
+    from world.traps import get_trap
+
+    px, py = state.player.x, state.player.y
+    found = 0
+    for y in range(py - 1, py + 2):
+        for x in range(px - 1, px + 2):
+            if not state.dungeon.in_bounds(x, y):
+                continue
+            if (x, y) in state.dungeon.revealed_traps:
+                continue
+            trap_id = state.dungeon.traps.get((x, y))
+            if not trap_id:
+                continue
+            trap = get_trap(trap_id)
+            if not trap:
+                continue
+            # Пассивный шанс ниже активного поиска
+            chance = trap.get("detect_chance", 0.3) * 0.5
+            if state.rng.random() < chance:
+                state.dungeon.revealed_traps.add((x, y))
+                found += 1
+    if found:
+        state.log_message(f"Вы заметили {found} ловушку рядом." if found == 1 else f"Вы заметили {found} ловушки рядом.")
 
 
 def _search_traps(state: "GameState") -> str:
