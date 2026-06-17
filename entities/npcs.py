@@ -327,11 +327,13 @@ def smith_ui(stdscr: "_CursesWindow", player: "Player", npc: NPC, state: "GameSt
 
 
 def prisoner_ui(stdscr: "_CursesWindow", state: "GameState", npc: NPC) -> str:
-    """UI пленника: освободить или оставить."""
+    """UI пленника: освободить или оставить. Требуется ключ от клетки."""
     import random
 
+    has_key = state.player.inventory.get("prisoner_key", 0) > 0
+    free_label = "Освободить (требуется ключ от клетки)" if has_key else "Освободить (нужен ключ от клетки)"
     options = [
-        ("free", "Освободить (требуется просто подойти и помочь)"),
+        ("free", free_label),
         ("leave", "Уйти"),
     ]
     selection = 0
@@ -376,8 +378,14 @@ def prisoner_ui(stdscr: "_CursesWindow", state: "GameState", npc: NPC) -> str:
             if action_id == "leave":
                 return npc.farewell
 
-            # Освобождаем пленника
+            if not has_key:
+                return f"Для освобождения {npc.name} нужен ключ от клетки."
+
+            # Освобождаем пленника и расходуем ключ
             state.npcs.remove(npc)
+            state.player.inventory["prisoner_key"] -= 1
+            if state.player.inventory["prisoner_key"] <= 0:
+                del state.player.inventory["prisoner_key"]
             rng = state.rng
             reward_type = rng.choice(["gold", "item", "xp"])
             if reward_type == "gold":

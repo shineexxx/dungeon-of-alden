@@ -38,6 +38,20 @@ def _pick_event(dungeon: "Dungeon", state: "GameState", rng: random.Random) -> d
     return rng.choice(weighted)
 
 
+def _place_prisoner_key(dungeon: "Dungeon", state: "GameState", rng: random.Random) -> None:
+    """Разместить ключ от клетки пленника на доступной floor-клетке."""
+    floors = dungeon.floor_positions()
+    if not floors:
+        return
+    # Исключаем клетку с пленником и лестницей
+    forbidden = {(state.player.x, state.player.y), dungeon.stairs}
+    candidates = [p for p in floors if p not in forbidden]
+    if not candidates:
+        candidates = floors
+    pos = rng.choice(candidates)
+    state.items_on_floor.setdefault(pos, []).append("prisoner_key")
+
+
 def _find_room_for_special(dungeon: "Dungeon", rng: random.Random, w: int, h: int) -> tuple[int, int] | None:
     """Найти место для прямоугольной спецкомнаты внутри подземелья."""
     for _ in range(50):
@@ -133,6 +147,8 @@ def place_special_rooms(dungeon: "Dungeon", state: "GameState", rng: random.Rand
         if npc_id:
             npc = create_npc(npc_id, cx, cy, rng)
             state.npcs.append(npc)
+            if npc_id == "prisoner":
+                _place_prisoner_key(dungeon, state, rng)
             # NPC стоит на interactable, не удаляем interactable
 
         # Записываем, что событие размещено (но не считаем посещённым)

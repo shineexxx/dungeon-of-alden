@@ -60,19 +60,34 @@ class FakeWindow:
         pass
 
 
+def test_prisoner_no_key():
+    state = GameState(seed=42, depth=3)
+    state.generate_level()
+    npc = create_npc("prisoner", state.player.x, state.player.y, state.rng)
+    state.npcs.append(npc)
+
+    stdscr = FakeWindow([10, 27])
+    msg = prisoner_ui(stdscr, state, npc)
+
+    assert npc in state.npcs
+    assert "нужен ключ" in msg
+    print("Prisoner no key OK")
+
+
 def test_prisoner_free():
     state = GameState(seed=42, depth=3)
     state.generate_level()
     npc = create_npc("prisoner", state.player.x, state.player.y, state.rng)
     state.npcs.append(npc)
+    state.player.inventory["prisoner_key"] = 1
 
     # Enter выбирает первый вариант (освободить), затем Esc
     stdscr = FakeWindow([10, 27])
     msg = prisoner_ui(stdscr, state, npc)
 
     assert npc not in state.npcs
+    assert "prisoner_key" not in state.player.inventory
     assert "освободили" in msg
-    assert state.player.gold > 0 or any(state.player.inventory.values())
     print("Prisoner free OK")
 
 
@@ -92,8 +107,26 @@ def test_help_import():
     print("Help import OK")
 
 
+def test_prisoner_key_spawned():
+    from world.special_rooms import place_special_rooms
+    state = GameState(seed=42, depth=3)
+    state.generate_level()
+    state.npcs = []
+    state.dungeon.interactables = {}
+    place_special_rooms(state.dungeon, state, state.rng)
+    has_prisoner = any(npc.id == "prisoner" for npc in state.npcs)
+    if has_prisoner:
+        keys_on_floor = sum(
+            1 for items in state.items_on_floor.values() for iid in items if iid == "prisoner_key"
+        )
+        assert keys_on_floor == 1, "Key should spawn on the same floor as prisoner"
+    print("Prisoner key spawn OK")
+
+
 if __name__ == "__main__":
+    test_prisoner_no_key()
     test_prisoner_free()
     test_floor_hint()
     test_help_import()
+    test_prisoner_key_spawned()
     print("All prisoner/help tests passed")

@@ -953,7 +953,18 @@ ITEMS: dict[str, dict] = {   'potion_healing': {   'name': 'зелье лече�
                 'rarity': 'common',
                 'depth_min': 1,
                 'description': 'Блестящие монеты.',
-                'tags': ['common', 'gold']}}
+                'tags': ['common', 'gold']},
+    'prisoner_key': {
+                'name': 'ключ от клетки',
+                'char': 'K',
+                'unicode_char': '🗝',
+                'type': 'key',
+                'value': 5,
+                'identified_by_default': True,
+                'rarity': 'common',
+                'depth_min': 1,
+                'description': 'Ржавый ключ от двери пленника.',
+                'tags': ['common', 'key']}}
 
 def get_item(item_id: str) -> dict | None:
     return ITEMS.get(item_id)
