@@ -2,13 +2,26 @@
 
 Консольный roguelike на Python с процедурной генерацией, биомами, магией, NPC, спецкомнатами и финальным боссом.
 
+## Установка
+### Linux/MacOS
+```bash
+git clone https://github.com/shineexxx/dungeon-of-alden.git
+```
+
+### Windows
+```bash
+git clone https://github.com/shineexxx/dungeon-of-alden.git
+pip install windows-curses
+```
+
+
 ## Запуск
 
 ```bash
 python3 game.py
 ```
 
-Требуется терминал с поддержкой `curses` и UTF-8 (Linux/macOS/Windows WSL). Минимальный размер окна: **60×14**.
+Требуется терминал с поддержкой `curses`/`windows-curses` и UTF-8 (Linux/macOS/Windows). Минимальный размер окна: **60×14**.
 
 ## Управление
 
