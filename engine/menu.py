@@ -12,12 +12,29 @@ if TYPE_CHECKING:
     from systems.game_state import GameState
 
 
+
 MENU_OPTIONS = [
     ("new_game", "Новая игра"),
     ("load_game", "Загрузить игру"),
     ("settings", "Настройки"),
     ("hall_of_fame", "Зал славы"),
     ("quit", "Выход"),
+]
+
+TITLE_ART = [
+    "██████╗ ██╗   ██╗███╗   ██╗ ██████╗ ███╗   ██╗",
+    "██╔══██╗██║   ██║████╗  ██║██╔═══██╗████╗  ██║",
+    "██║  ██║██║   ██║██╔██╗ ██║██║   ██║██╔██╗ ██║",
+    "██║  ██║██║   ██║██║╚██╗██║██║   ██║██║╚██╗██║",
+    "██████╔╝╚██████╔╝██║ ╚████║╚██████╔╝██║ ╚████║",
+    "╚═════╝  ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═══╝",
+    "",
+    " ██████╗ ███████╗     █████╗ ██╗     ██████╗ ███████╗███╗   ██╗",
+    "██╔═══██╗██╔════╝    ██╔══██╗██║     ██╔══██╗██╔════╝████╗  ██║",
+    "██║   ██║█████╗█████╗███████║██║     ██║  ██║█████╗  ██╔██╗ ██║",
+    "██║   ██║██╔══╝╚════╝██╔══██║██║     ██║  ██║██╔══╝  ██║╚██╗██║",
+    "╚██████╔╝██║         ██║  ██║███████╗██████╔╝███████╗██║ ╚████║",
+    " ╚═════╝ ╚═╝         ╚═╝  ╚═╝╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═══╝",
 ]
 
 
@@ -28,15 +45,18 @@ def show_main_menu(stdscr: "_CursesWindow") -> str:
         stdscr.clear()
         height, width = stdscr.getmaxyx()
 
-        title = " ПОДЗЕМЕЛЬЕ АЛЬДЕНА "
-        try:
-            stdscr.attron(curses.color_pair(9))
-            stdscr.addstr(2, (width - len(title)) // 2, title)
-            stdscr.attroff(curses.color_pair(9))
-        except curses.error:
-            pass
+        # ASCII-art заголовок
+        art_y = 1
+        for idx, line in enumerate(TITLE_ART):
+            x = (width - len(line)) // 2
+            try:
+                stdscr.attron(curses.color_pair(9))
+                stdscr.addstr(art_y + idx, max(0, x), line[: width - 1])
+                stdscr.attroff(curses.color_pair(9))
+            except curses.error:
+                pass
 
-        start_y = height // 2 - len(MENU_OPTIONS) // 2
+        start_y = max(art_y + len(TITLE_ART) + 1, height // 2 - len(MENU_OPTIONS) // 2)
         for idx, (action_id, label) in enumerate(MENU_OPTIONS):
             prefix = "> " if idx == selection else "  "
             line = f"{prefix}{label}"

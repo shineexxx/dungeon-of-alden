@@ -22,3 +22,6 @@ saves/hall_of_fame.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Agent instructions
+AGENTS.md
