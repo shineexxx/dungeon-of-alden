@@ -158,6 +158,10 @@ def render_map(
         stdscr.refresh()
         return
 
+    # Центрируем игровое окно по ширине терминала
+    game_width = min(width, 80)
+    offset_x = (width - game_width) // 2
+
     # Верхняя панель HUD
     xp_next = player.xp_to_next()
     satiety = player.satiety_status()
@@ -179,7 +183,7 @@ def render_map(
         )
     stdscr.attron(curses.color_pair(10))
     try:
-        stdscr.addstr(0, 0, hud[: width - 1])
+        stdscr.addstr(0, offset_x, hud[: game_width - 1])
     except curses.error:
         pass
     stdscr.attroff(curses.color_pair(10))
@@ -197,7 +201,7 @@ def render_map(
         )
     try:
         stdscr.attron(curses.color_pair(9))
-        stdscr.addstr(1, 0, legend[: width - 1])
+        stdscr.addstr(1, offset_x, legend[: game_width - 1])
         stdscr.attroff(curses.color_pair(9))
     except curses.error:
         pass
@@ -211,7 +215,7 @@ def render_map(
         if map_top + y >= map_height + map_top:
             break
         for x in range(dungeon.width):
-            if x >= width - 1:
+            if x >= game_width - 1:
                 break
             tile = dungeon.tiles[y][x]
             visible = dungeon.visible[y][x]
@@ -303,7 +307,7 @@ def render_map(
                 char = _tile_char("player", use_unicode)
                 attr = curses.color_pair(1)
 
-            _draw_char(stdscr, map_top + y, x, char, attr)
+            _draw_char(stdscr, map_top + y, x + offset_x, char, attr)
 
     # Подсказка предмета под ногами
     floor_hint = _floor_item_hint(state, player)
@@ -311,7 +315,7 @@ def render_map(
         hint_text = f"Под ногами: {floor_hint}"
         try:
             stdscr.attron(curses.color_pair(9))
-            stdscr.addstr(height - 4, 0, hint_text[: width - 1])
+            stdscr.addstr(height - 4, offset_x, hint_text[: game_width - 1])
             stdscr.attroff(curses.color_pair(9))
         except curses.error:
             pass
@@ -323,13 +327,13 @@ def render_map(
     # Очистить область лога, чтобы не оставался мусор от предыдущих кадров
     for clear_y in range(log_y_start, height):
         try:
-            stdscr.addstr(clear_y, 0, " " * (width - 1))
+            stdscr.addstr(clear_y, offset_x, " " * (game_width - 1))
         except curses.error:
             pass
-    stdscr.hline(log_y_start - 1, 0, curses.ACS_HLINE, width - 1)
+    stdscr.hline(log_y_start - 1, offset_x, curses.ACS_HLINE, game_width - 1)
     y = log_y_start
     for line in log_lines[-3:]:
-        used = add_wrapped_text(stdscr, y, 0, line, width - 1, max_lines=2)
+        used = add_wrapped_text(stdscr, y, offset_x, line, game_width - 1, max_lines=2)
         y += used
         if y >= height:
             break
