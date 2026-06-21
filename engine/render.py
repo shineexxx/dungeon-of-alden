@@ -146,6 +146,7 @@ def render_map(
 ) -> None:
     """Отрисовать всё игровое состояние."""
     stdscr.clear()
+    stdscr.refresh()
     height, width = stdscr.getmaxyx()
     use_unicode = _use_unicode(state)
 
@@ -161,6 +162,7 @@ def render_map(
     # Центрируем игровое окно по ширине терминала
     game_width = min(width, 80)
     offset_x = (width - game_width) // 2
+    pad = curses.newpad(height, game_width)
 
     # Верхняя панель HUD
     xp_next = player.xp_to_next()
@@ -183,7 +185,7 @@ def render_map(
         )
     stdscr.attron(curses.color_pair(10))
     try:
-        stdscr.addstr(0, offset_x, hud[: game_width - 1])
+        pad.addstr(0, 0, hud[: game_width - 1])
     except curses.error:
         pass
     stdscr.attroff(curses.color_pair(10))
@@ -201,7 +203,7 @@ def render_map(
         )
     try:
         stdscr.attron(curses.color_pair(9))
-        stdscr.addstr(1, offset_x, legend[: game_width - 1])
+        pad.addstr(1, 0, legend[: game_width - 1])
         stdscr.attroff(curses.color_pair(9))
     except curses.error:
         pass
@@ -307,7 +309,7 @@ def render_map(
                 char = _tile_char("player", use_unicode)
                 attr = curses.color_pair(1)
 
-            _draw_char(stdscr, map_top + y, x + offset_x, char, attr)
+            _draw_char(pad, map_top + y, x, char, attr)
 
     # Подсказка предмета под ногами
     floor_hint = _floor_item_hint(state, player)
@@ -315,7 +317,7 @@ def render_map(
         hint_text = f"Под ногами: {floor_hint}"
         try:
             stdscr.attron(curses.color_pair(9))
-            stdscr.addstr(height - 4, offset_x, hint_text[: game_width - 1])
+            pad.addstr(height - 4, 0, hint_text[: game_width - 1])
             stdscr.attroff(curses.color_pair(9))
         except curses.error:
             pass
@@ -327,22 +329,22 @@ def render_map(
     # Очистить область лога, чтобы не оставался мусор от предыдущих кадров
     for clear_y in range(log_y_start, height):
         try:
-            stdscr.addstr(clear_y, offset_x, " " * (game_width - 1))
+            pad.addstr(clear_y, 0, " " * (game_width - 1))
         except curses.error:
             pass
-    stdscr.hline(log_y_start - 1, offset_x, curses.ACS_HLINE, game_width - 1)
+    pad.hline(log_y_start - 1, 0, curses.ACS_HLINE, game_width - 1)
     y = log_y_start
     for line in log_lines[-3:]:
-        used = add_wrapped_text(stdscr, y, offset_x, line, game_width - 1, max_lines=2)
+        used = add_wrapped_text(pad, y, 0, line, game_width - 1, max_lines=2)
         y += used
         if y >= height:
             break
 
     # Меню Esc
     if menu_mode and not level_up_mode:
-        _render_menu(stdscr, menu_options, menu_selection)
+        _render_menu(pad, menu_options, menu_selection)
 
-    stdscr.refresh()
+    pad.refresh(0, 0, 0, offset_x, height - 1, offset_x + game_width - 1)
 
 
 def _floor_item_hint(state: "GameState", player: "Player") -> str:
