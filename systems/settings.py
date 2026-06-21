@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Any
 
 
-SETTINGS_FILE = Path("saves/settings.json")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+SETTINGS_FILE = ROOT_DIR / "saves" / "settings.json"
 
 
 @dataclass

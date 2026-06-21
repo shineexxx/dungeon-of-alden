@@ -14,7 +14,8 @@ if TYPE_CHECKING:
     from systems.game_state import GameState
 
 
-HALL_OF_FAME_FILE = Path("saves/hall_of_fame.json")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+HALL_OF_FAME_FILE = ROOT_DIR / "saves" / "hall_of_fame.json"
 MAX_ENTRIES = 10
 
 

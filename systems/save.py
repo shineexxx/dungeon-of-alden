@@ -12,7 +12,8 @@ if TYPE_CHECKING:
     from systems.game_state import GameState
 
 
-SAVE_DIR = Path("saves")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+SAVE_DIR = ROOT_DIR / "saves"
 SAVE_VERSION = 7
 AUTOSAVE_SLOT = "autosave"
 
